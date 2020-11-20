@@ -1,0 +1,99 @@
+﻿@page "/"
+@namespace ShoppingCart.Client.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShoppingCart.Client</title>
+    <base href="~/" />
+    <environment include="Development">
+        <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+              asp-fallback-href="css/bootstrap/bootstrap.min.css"
+              asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
+              crossorigin="anonymous"
+              integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+    </environment>
+    <script type="text/javascript">
+        function ShowHideDiv() {
+            var divpaypayment = document.getElementById("divpaypayment");
+            divpaypayment.style.display = document.getElementById("paymentByCard").checked ? "block" : "none";
+        }
+    </script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.22/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script type="text/javascript">
+        function formValidation() {
+            var cardChecked = document.getElementById("paymentByCard").checked;
+            var cname = document.getElementById("cname").value;
+            var cardnumber = document.getElementById("cardnumber").value;
+            var expmonth = document.getElementById("expmonth").value;
+            var expyear = document.getElementById("expyear").value;
+            var cvv = document.getElementById("cvv").value;
+            var address = document.getElementById("deliveryaddress").value;
+            var message = "";
+            var b = true;
+            
+            if ((cname == '' || cname == null) && cardChecked) {
+                message = "Please Enter the Card Name\n";
+                b = false;
+            } 
+            if ((cardnumber == '' || cardnumber == null) && cardChecked ) {
+                message = message+ "Please Enter the Card Number\n";
+                b = false;
+            }
+            if ((expmonth == '' || expmonth == null) && cardChecked) {
+                message = message + "Please Enter the expire month\n";
+                b = false;
+            } 
+            if ((expyear == '' || expyear == null) && cardChecked) {
+                message = message + "Please Enter the expire year\n";
+                b = false;
+            }
+            if ((cvv == '' || cvv == null) && cardChecked) {
+                message = message + "Please Enter the cvv\n";
+                b = false;
+            }
+            if (address == '' || address == null) {
+                message = message + "Please Enter the delivery address\n";
+                b = false;
+            }
+            if (message != '') {
+                alert(message);
+            }
+            return b;
+            
+        }
+        function Export() {
+            var b = formValidation();
+            if (b) {
+                html2canvas(document.getElementById('deliaverytable'), {
+                    onrendered: function (canvas) {
+                        var data = canvas.toDataURL() + "Address" + document.getElementById('deliveryaddress').value;
+                        var docDefinition = {
+                            content: [{
+                                image: data,
+                                width: 500
+                            }]
+                        };
+
+                        pdfMake.createPdf(docDefinition).download("Invoice.pdf");
+                    }
+                });
+            }
+        }
+    </script>
+  
+</head>
+<body>
+    <app>
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </app>
+
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

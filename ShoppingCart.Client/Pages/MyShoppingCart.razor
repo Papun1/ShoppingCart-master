@@ -1,0 +1,238 @@
+﻿@page "/MyShoppingCart"
+@inject AppState appState
+@inject ShoppingCartService shoppingCartService
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            font-family: Arial;
+            font-size: 17px;
+            padding: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        .row {
+            display: -ms-flexbox; /* IE10 */
+            display: flex;
+            -ms-flex-wrap: wrap; /* IE10 */
+            flex-wrap: wrap;
+            margin: 0 -16px;
+        }
+
+        .col-25 {
+            -ms-flex: 25%; /* IE10 */
+            flex: 25%;
+        }
+
+        .col-50 {
+            -ms-flex: 50%; /* IE10 */
+            flex: 50%;
+        }
+
+        .col-75 {
+            -ms-flex: 75%; /* IE10 */
+            flex: 75%;
+        }
+
+        .col-25,
+        .col-50,
+        .col-75 {
+            padding: 0 16px;
+        }
+
+        .container {
+            background-color: #f2f2f2;
+            padding: 5px 20px 15px 20px;
+            border: 1px solid lightgrey;
+            border-radius: 3px;
+        }
+
+        input[type=text] {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .errorHappen {
+            display: block;
+            color: red;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .noErrorHappen {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .textarea {
+            width: 100%;
+            height: 150px;
+            padding: 12px 20px;
+            box-sizing: border-box;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            background-color: #f8f8f8;
+            resize: none;
+        }
+
+        label {
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .icon-container {
+            margin-bottom: 20px;
+            padding: 7px 0;
+            font-size: 24px;
+        }
+
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            width: 100%;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+            .btn:hover {
+                background-color: #45a049;
+            }
+
+        a {
+            color: #2196F3;
+        }
+
+        hr {
+            border: 1px solid lightgrey;
+        }
+
+        span.price {
+            float: right;
+            color: grey;
+        }
+    </style>
+
+
+    @if (Model != null && Model.CartItems.Count() > 0)
+    {
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3 class="panel-title">Order Summary</h3>
+    </div>
+    <div class="panel-body">
+        <div id="update-message">
+        </div>
+        <table class="table table-striped table-hover " id="deliaverytable">
+            <thead>
+                <tr>
+                    <th>
+                        Item Name
+                    </th>
+                    <th>
+                        Price (each)
+                    </th>
+                    <th>
+                        Quantity
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            @foreach (var item in Model.CartItems)
+            {
+<tr>
+    <td>
+        @item.Item.Name
+    </td>
+    <td>
+        @item.Item.Price.ToString("N2") ₹
+    </td>
+    <td>
+        @item.Count.ToString()
+    </td>
+    <td>
+        <a style="cursor:pointer" @onclick="(()=> removeFromCart(item.ItemId))">Remove From Cart</a>
+    </td>
+</tr>
+}
+            <tr class="info">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td id="cart-total">
+                    Total : @Model.CartTotal.ToString("N2") ₹
+                </td>
+            </tr>
+        </table>
+        <div>
+            <input type="radio" name="payment" id="paymentByCard" checked onclick="javascript:ShowHideDiv();"/>Payment By Card
+            <input type="radio" name="payment" id="cashOnDelivery" onclick="javascript:ShowHideDiv();" />Cash On Delivery
+        </div>
+        <div class="col-50" id="divpaypayment">
+            <h3>Payment</h3>
+            <label for="fname">Accepted Cards</label>
+            <div class="icon-container">
+                <i class="fa fa-cc-visa" style="color:navy;"></i>
+                <i class="fa fa-cc-amex" style="color:blue;"></i>
+                <i class="fa fa-cc-mastercard" style="color:red;"></i>
+                <i class="fa fa-cc-discover" style="color:orange;"></i>
+            </div>
+            <label for="cname">Name on Card</label>
+            <input type="text" id="cname" name="cname" placeholder="Name">
+            <label for="ccnum">Credit card number</label>
+            <input type="text" id="cardnumber" name="cardnumber" placeholder="1111-2222-3333-4444">
+            <label for="expmonth">Exp Month</label>
+            <input type="text" id="expmonth" name="expmonth" placeholder="September">
+            <div class="row">
+                <div class="col-50">
+                    <label for="expyear">Exp Year</label>
+                    <input type="text" id="expyear" name="expyear" placeholder="2020">
+                </div>
+                <div class="col-50">
+                    <label for="cvv">CVV</label>
+                    <input type="text" id="cvv" name="cvv" placeholder="352">
+                </div>
+            </div>
+        </div>
+        <div id="daliveyaddress">
+            <label for="cname">Delivery Address</label>
+            <textarea name="deliveryaddress" id="deliveryaddress" class="textarea"></textarea>
+        </div>
+        <input type="submit" value="Continue to checkout" id="checkOut" onclick="javascript:Export();" class="btn">
+    </div>
+</div> }
+else
+{
+<div class="custom-bg">
+    <p>There are no items in your cart currently. Please shop for something and add items..</p>
+</div>}
+
+    @code
+{ ShoppingCartViewModel Model;
+
+        protected override async Task OnInitializedAsync()
+        {
+            Model = await shoppingCartService.shoppingCart();
+        }
+
+        protected async Task removeFromCart(int id)
+        {
+            var vm = await shoppingCartService.RemoveFromCart(id);
+            var cartItem = Model.CartItems.FirstOrDefault(c => c.ItemId == id);
+            Model.CartItems.Remove(cartItem);
+            //Model.CartTotal = vm.CartTotal;
+            appState.setCartCount(vm.CartCount);
+            StateHasChanged();
+        } }
